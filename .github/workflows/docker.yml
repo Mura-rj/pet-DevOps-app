@@ -1,0 +1,32 @@
+name: Docker Build and Push
+
+on:
+  push:
+    branches: [ "master" ]  # Срабатывает только при пуше в main
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest  # Используем последнюю Ubuntu
+    
+    steps:
+      # Шаг 1: Вытягиваем код из репозитория
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      # Шаг 2: Логинимся в GitHub Container Registry
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          
+      # Шаг 3: Собираем и пушим Docker-образ
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .  # Путь к Dockerfile (корень проекта)
+          push: true  # Разрешаем пуш
+          tags: |
+              ghcr.io/mura-rj/pet-app:latest
+              ghcr.io/mura-rj/pet-app:${{ github.sha }}
